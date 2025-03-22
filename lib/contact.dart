@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'jobboard.dart';
 import 'home.dart';
 
@@ -73,48 +74,25 @@ class _ContactScreenState extends State<ContactScreen> {
                   color: Colors.black),
             ),
             SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.phone, color: Colors.black),
-                      SizedBox(width: 10),
-                      Text(
-                        'Call us: +0962 2191 2191',
-                        style: TextStyle(fontSize: 14, color: Colors.black),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Icon(Icons.email, color: Colors.black),
-                      SizedBox(width: 10),
-                      Text(
-                        'Email Us: lifelinepampanga@gmail.com',
-                        style: TextStyle(fontSize: 14, color: Colors.black),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            ContactCard(),
             SizedBox(height: 20),
             Text(
               'Contact us on Social Media',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             SizedBox(height: 10),
-            _buildSocialMediaButton('Instagram', Icons.camera_alt),
-            _buildSocialMediaButton('Telegram', Icons.send),
-            _buildSocialMediaButton('Facebook', Icons.facebook),
-            _buildSocialMediaButton('WhatsApp', Icons.chat),
+            SocialMediaTile(
+                icon: Icons.camera_alt,
+                name: 'Instagram',
+                url: 'https://www.instagram.com/'),
+            SocialMediaTile(
+                icon: Icons.send, name: 'Telegram', url: 'https://telegram.org/'),
+            SocialMediaTile(
+                icon: Icons.facebook,
+                name: 'Facebook',
+                url: 'https://www.facebook.com/'),
+            SocialMediaTile(
+                icon: Icons.chat, name: 'WhatsApp', url: 'https://www.whatsapp.com/'),
           ],
         ),
       ),
@@ -124,40 +102,84 @@ class _ContactScreenState extends State<ContactScreen> {
       ),
     );
   }
+}
 
-  Widget _buildSocialMediaButton(String text, IconData icon) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 10),
-      child: ElevatedButton(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: 15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: Colors.black26),
+class ContactCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            spreadRadius: 1,
           ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ContactRow(icon: Icons.phone, text: 'Call Us: +0962 2191 2191'),
+          SizedBox(height: 15),
+          ContactRow(
+              icon: Icons.email,
+              text: 'Email Us: lifelinepampanga@gmail.com'),
+        ],
+      ),
+    );
+  }
+}
+
+class ContactRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  ContactRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.black),
+        SizedBox(width: 10),
+        Text(
+          text,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 25, color: Colors.black),
-                SizedBox(width: 10),
-                Text(
-                  text,
-                  style: TextStyle(color: Colors.black, fontSize: 16),
-                ),
-              ],
-            ),
-            CircleAvatar(
-              backgroundColor: Colors.red,
-              radius: 15,
-              child: Icon(Icons.arrow_forward, color: Colors.white, size: 18),
-            ),
-          ],
-        ),
+      ],
+    );
+  }
+}
+
+class SocialMediaTile extends StatelessWidget {
+  final IconData icon;
+  final String name;
+  final String url;
+
+  SocialMediaTile({required this.icon, required this.name, required this.url});
+
+  void _launchURL() async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      child: ListTile(
+        leading: Icon(icon, size: 30, color: Colors.black),
+        title: Text(name, style: TextStyle(fontSize: 18)),
+        trailing: Icon(Icons.arrow_circle_right_sharp, color: Colors.red),
+        onTap: _launchURL,
       ),
     );
   }
