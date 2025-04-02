@@ -2,19 +2,6 @@ import 'package:flutter/material.dart';
 import 'jobboard.dart';
 import 'contact.dart';
 import 'home.dart';
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: FormScreen(jobTitle: '',),
-    );
-  }
-}
 
 class FormScreen extends StatefulWidget {
   final String jobTitle;
@@ -30,6 +17,28 @@ class _FormScreenState extends State<FormScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController contactController = TextEditingController();
   final TextEditingController dobController = TextEditingController();
+
+  List<String> pendingApplications = [];
+  List<String> approvedApplications = [];
+
+  void submitApplication() {
+    setState(() {
+      if (nameController.text.isNotEmpty) {
+        pendingApplications.add(nameController.text);
+      }
+    });
+    nameController.clear();
+    emailController.clear();
+    contactController.clear();
+    dobController.clear();
+  }
+
+  void approveApplication(String applicantName) {
+    setState(() {
+      pendingApplications.remove(applicantName);
+      approvedApplications.add(applicantName);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +123,7 @@ class _FormScreenState extends State<FormScreen> {
               _buildTextField(dobController),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: submitApplication,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green[700],
                   shape: RoundedRectangleBorder(
@@ -139,13 +148,30 @@ class _FormScreenState extends State<FormScreen> {
                       _buildTableCell('APPROVED'),
                     ],
                   ),
+                  ...pendingApplications.map((name) {
+                    return TableRow(children: [
+                      _buildTableCell(name),
+                      Padding(
+                        padding: EdgeInsets.all(10),
+                        child: ElevatedButton(
+                          onPressed: () => approveApplication(name),
+                          child: Text("Approve"),
+                        ),
+                      ),
+                    ]);
+                  }).toList(),
+                  ...approvedApplications.map((name) {
+                    return TableRow(children: [
+                      _buildTableCell(''),
+                      _buildTableCell(name),
+                    ]);
+                  }).toList(),
                 ],
               ),
             ],
           ),
         ),
       ),
-
       bottomNavigationBar: BottomAppBar(
         color: Colors.green[700],
         shape: CircularNotchedRectangle(),
