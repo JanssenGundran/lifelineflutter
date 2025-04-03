@@ -5,8 +5,18 @@ import 'home.dart';
 
 class FormScreen extends StatefulWidget {
   final String jobTitle;
+  final Function(Map<String, String>) onApply;
+  final List<Map<String, String>> pendingApplications;
+  final List<Map<String, String>> approvedApplications;
+  final Function(Map<String, String>) onHire;
 
-  FormScreen({required this.jobTitle});
+  FormScreen({
+    required this.jobTitle,
+    required this.onApply,
+    required this.pendingApplications,
+    required this.approvedApplications,
+    required this.onHire,
+  });
 
   @override
   _FormScreenState createState() => _FormScreenState();
@@ -17,28 +27,6 @@ class _FormScreenState extends State<FormScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController contactController = TextEditingController();
   final TextEditingController dobController = TextEditingController();
-
-  List<String> pendingApplications = [];
-  List<String> approvedApplications = [];
-
-  void submitApplication() {
-    setState(() {
-      if (nameController.text.isNotEmpty) {
-        pendingApplications.add(nameController.text);
-      }
-    });
-    nameController.clear();
-    emailController.clear();
-    contactController.clear();
-    dobController.clear();
-  }
-
-  void approveApplication(String applicantName) {
-    setState(() {
-      pendingApplications.remove(applicantName);
-      approvedApplications.add(applicantName);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,14 +57,14 @@ class _FormScreenState extends State<FormScreen> {
             icon: Icon(Icons.menu, color: Colors.black),
             onSelected: (String choice) {
               if (choice == 'Home') {
-                Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()));
               } else if (choice == 'Find A Job') {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => JobScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => JobScreen()));
               } else if (choice == 'Contact Us') {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => ContactScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => ContactScreen()));
               }
             },
             itemBuilder: (BuildContext context) {
@@ -98,7 +86,7 @@ class _FormScreenState extends State<FormScreen> {
             children: [
               SizedBox(height: 20),
               Text(
-                widget.jobTitle, 
+                widget.jobTitle,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -123,7 +111,17 @@ class _FormScreenState extends State<FormScreen> {
               _buildTextField(dobController),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: submitApplication,
+                onPressed: () {
+                  final applicationData = {
+                    'name': nameController.text,
+                    'email': emailController.text,
+                    'contact': contactController.text,
+                    'dob': dobController.text,
+                    'jobTitle': widget.jobTitle,
+                  };
+                  widget.onApply(applicationData);
+                  setState(() {});
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green[700],
                   shape: RoundedRectangleBorder(
@@ -148,24 +146,25 @@ class _FormScreenState extends State<FormScreen> {
                       _buildTableCell('APPROVED'),
                     ],
                   ),
-                  ...pendingApplications.map((name) {
-                    return TableRow(children: [
-                      _buildTableCell(name),
-                      Padding(
-                        padding: EdgeInsets.all(10),
-                        child: ElevatedButton(
-                          onPressed: () => approveApplication(name),
-                          child: Text("Approve"),
-                        ),
-                      ),
-                    ]);
-                  }).toList(),
-                  ...approvedApplications.map((name) {
-                    return TableRow(children: [
-                      _buildTableCell(''),
-                      _buildTableCell(name),
-                    ]);
-                  }).toList(),
+                  ...widget.pendingApplications
+                      .map((application) => TableRow(children: [
+                            _buildTableCell(application['name'] ?? ''),
+                            Padding(
+                              padding: EdgeInsets.all(10),
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    widget.onHire(application);
+                                  },
+                                  child: Text("Hire")),
+                            )
+                          ]))
+                      .toList(),
+                  ...widget.approvedApplications
+                      .map((application) => TableRow(children: [
+                            _buildTableCell(""),
+                            _buildTableCell(application['name'] ?? ''),
+                          ]))
+                      .toList(),
                 ],
               ),
             ],
