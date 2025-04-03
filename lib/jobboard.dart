@@ -24,28 +24,6 @@ class _JobScreenState extends State<JobScreen> {
     });
   }
 
-  void _hireApplication(Map<String, String> application) {
-    setState(() {
-      final jobTitle = application['jobTitle'];
-      if (jobTitle != null && jobSlots.containsKey(jobTitle)) {
-        if (jobSlots[jobTitle]! > 0) {
-          jobSlots[jobTitle] = jobSlots[jobTitle]! - 1;
-          pendingApplications.remove(application);
-          approvedApplications.add(application);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text('Sorry, no more slots available for $jobTitle.')),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: Job title not found.')),
-        );
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,7 +143,6 @@ class _JobScreenState extends State<JobScreen> {
                       _applyJob(jobTitle, applicationData),
                   pendingApplications: pendingApplications,
                   approvedApplications: approvedApplications,
-                  onHire: (application) => _hireApplication(application),
                 ),
               ),
             );
