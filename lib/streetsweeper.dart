@@ -8,14 +8,12 @@ class FormScreen extends StatefulWidget {
   final Function(Map<String, String>) onApply;
   final List<Map<String, String>> pendingApplications;
   final List<Map<String, String>> approvedApplications;
-  final Function(Map<String, String>) onHire;
 
   FormScreen({
     required this.jobTitle,
     required this.onApply,
     required this.pendingApplications,
     required this.approvedApplications,
-    required this.onHire,
   });
 
   @override
@@ -149,19 +147,12 @@ class _FormScreenState extends State<FormScreen> {
                   ...widget.pendingApplications
                       .map((application) => TableRow(children: [
                             _buildTableCell(application['name'] ?? ''),
-                            Padding(
-                              padding: EdgeInsets.all(10),
-                              child: ElevatedButton(
-                                  onPressed: () {
-                                    widget.onHire(application);
-                                  },
-                                  child: Text("Hire")),
-                            )
+                            _buildTableCell(''),
                           ]))
                       .toList(),
                   ...widget.approvedApplications
                       .map((application) => TableRow(children: [
-                            _buildTableCell(""),
+                            _buildTableCell(''),
                             _buildTableCell(application['name'] ?? ''),
                           ]))
                       .toList(),
@@ -169,14 +160,6 @@ class _FormScreenState extends State<FormScreen> {
               ),
             ],
           ),
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.green[700],
-        shape: CircularNotchedRectangle(),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [],
         ),
       ),
     );
