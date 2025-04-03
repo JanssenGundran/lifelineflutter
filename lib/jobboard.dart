@@ -3,12 +3,48 @@ import 'streetsweeper.dart';
 import 'contact.dart';
 import 'home.dart';
 
-class JobScreen extends StatelessWidget {
-  final List<String> jobs = [
-    'Street Sweeper',
-    'Barangay Tanod',
-    'Garbage Collector'
-  ];
+class JobScreen extends StatefulWidget {
+  @override
+  _JobScreenState createState() => _JobScreenState();
+}
+
+class _JobScreenState extends State<JobScreen> {
+  final Map<String, int> jobSlots = {
+    'Street Sweeper': 5,
+    'Barangay Tanod': 3,
+    'Garbage Collector': 4,
+  };
+
+  final List<Map<String, String>> pendingApplications = [];
+  final List<Map<String, String>> approvedApplications = [];
+
+  void _applyJob(String jobTitle, Map<String, String> applicationData) {
+    setState(() {
+      pendingApplications.add(applicationData);
+    });
+  }
+
+  void _hireApplication(Map<String, String> application) {
+    setState(() {
+      final jobTitle = application['jobTitle'];
+      if (jobTitle != null && jobSlots.containsKey(jobTitle)) {
+        if (jobSlots[jobTitle]! > 0) {
+          jobSlots[jobTitle] = jobSlots[jobTitle]! - 1;
+          pendingApplications.remove(application);
+          approvedApplications.add(application);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Sorry, no more slots available for $jobTitle.')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: Job title not found.')),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,14 +79,14 @@ class JobScreen extends StatelessWidget {
             icon: Icon(Icons.menu, color: Colors.black),
             onSelected: (String choice) {
               if (choice == 'Home') {
-                Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()));
               } else if (choice == 'Find A Job') {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => JobScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => JobScreen()));
               } else if (choice == 'Contact Us') {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => ContactScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => ContactScreen()));
               }
             },
             itemBuilder: (BuildContext context) {
@@ -81,7 +117,9 @@ class JobScreen extends StatelessWidget {
             ),
             SizedBox(height: 30),
             Column(
-              children: jobs.map((job) => _buildJobTile(context, job)).toList(),
+              children: jobSlots.keys
+                  .map((job) => _buildJobTile(context, job))
+                  .toList(),
             ),
           ],
         ),
@@ -110,7 +148,7 @@ class JobScreen extends StatelessWidget {
         ),
         child: ListTile(
           title: Text(
-            jobTitle,
+            '$jobTitle (Slots: ${jobSlots[jobTitle]})',
             style: TextStyle(fontSize: 16, color: Colors.black),
           ),
           trailing: CircleAvatar(
@@ -121,7 +159,14 @@ class JobScreen extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => FormScreen(jobTitle: jobTitle),
+                builder: (context) => FormScreen(
+                  jobTitle: jobTitle,
+                  onApply: (applicationData) =>
+                      _applyJob(jobTitle, applicationData),
+                  pendingApplications: pendingApplications,
+                  approvedApplications: approvedApplications,
+                  onHire: (application) => _hireApplication(application),
+                ),
               ),
             );
           },
